@@ -3,4 +3,14 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+
+    <string name="pref_sort_order_key">sort_order</string>
+    <string name="pref_sort_order_default">popularity.desc</string>
+
+    <string name="pref_sort_order_label_popular">Most Popular</string>
+    <string name="pref_sort_order_label_rating">Highest Rated</string>
+
+    <string name="pref_sort_order_values_popular">popularity.desc</string>
+    <string name="pref_sort_order_values_rating">vote_count.desc</string>
+
 </resources>

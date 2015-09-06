@@ -1,7 +1,11 @@
 package com.mycompany.popularmovies;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -86,6 +90,10 @@ public class MainActivity extends ActionBarActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+
+            Intent settings = new Intent(getApplicationContext(), SettingsActivity.class);
+            startActivity(settings);
+
             return true;
         }
 
@@ -96,10 +104,20 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onStart() {
         super.onStart();
+/*
+        SharedPreferences sharedPrefs =
+                PreferenceManager.getDefaultSharedPreferences(this);
+        String location = sharedPrefs.getString(
+                getString(R.string.pref_location_key),
+                getString(R.string.pref_location_default));
+*/
+
 
         FetchMoviesTask fetchMoviesTask = new FetchMoviesTask();
         fetchMoviesTask.execute();
 
+
+        //Log.v("MAINACTIVITY", "ONSTART");
     }
 
     public class FetchMoviesTask extends AsyncTask<String, Void, String[]> {
@@ -145,10 +163,44 @@ public class MainActivity extends ActionBarActivity {
             // Will contain the raw JSON response as a string.
             String moviesJsonStr = null;
 
+
+            SharedPreferences sharedPrefs =
+                    PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            String sortOrder = sharedPrefs.getString(
+                    getString(R.string.pref_sort_order_key),
+                    getString(R.string.pref_sort_order_default));
+
+            Log.v(LOG_TAG, "SORT BY " + sortOrder);
+
+
             try {
 
+
+                final String MOVIE_BASE_URL =
+                        "http://api.themoviedb.org/3/discover/movie?";
+                final String SORT_BY_PARAM = "sort_by";
+                final String API_KEY_PARAM = "api_key";
+                final String VOTE_COUNT = "vote_count.gte";
+
+                Uri builtUri = Uri.parse(MOVIE_BASE_URL)
+                        .buildUpon()
+                        .appendQueryParameter(SORT_BY_PARAM, sortOrder)
+                        .appendQueryParameter(VOTE_COUNT, "10")
+                        .appendQueryParameter(API_KEY_PARAM, "aa336466223f0deecbe36bf1aafd76d3")
+                        .build();
+
+                URL url = new URL(builtUri.toString());
+
+                Log.v(LOG_TAG, "Built URI " + builtUri.toString());
+
+
+
+
+
+
+
                 // TODO: REMOVE api key before submitting project!!!
-                URL url = new URL("http://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=aa336466223f0deecbe36bf1aafd76d3");
+                //URL url = new URL("http://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=aa336466223f0deecbe36bf1aafd76d3");
 
                 //Log.v(LOG_TAG, "URL " + url.toString());
 
