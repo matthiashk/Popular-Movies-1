@@ -48,16 +48,15 @@ public class ImageAdapter extends BaseAdapter {
             imageView = new ImageView(mContext);
             imageView.setLayoutParams(new GridView.LayoutParams(params));
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            imageView.setPadding(8, 8, 8, 8);
+            //imageView.setPadding(8, 8, 8, 8);
         } else {
             imageView = (ImageView) convertView;
         }
 
         Picasso.with(mContext)
                 .load(imageUrls.get(position))
-                //.placeholder(R.drawable.weather)
                 .centerCrop()
-                .resize(400, 400)
+                .resize(600, 900)
                 .into(imageView);
 
         return imageView;

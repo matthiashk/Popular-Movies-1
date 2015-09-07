@@ -13,7 +13,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,6 +30,9 @@ import java.util.List;
 
 public class MainActivity extends ActionBarActivity {
 
+    public ArrayList<Movie> finalMovieData = new ArrayList<Movie>();
+
+    // todo: remove dummy data
     public static List<String> defaultImages = new ArrayList<>(Arrays.asList(
             "http://i.imgur.com/rFLNqWI.jpg",
             "http://i.imgur.com/C9pBVt7.jpg",
@@ -46,8 +48,6 @@ public class MainActivity extends ActionBarActivity {
             "http://i.imgur.com/syELajx.jpg",
             "http://i.imgur.com/COzBnru.jpg",
             "http://i.imgur.com/Z3QjilA.jpg"
-
-
     ));
 
     private ImageAdapter imageAdapter;
@@ -66,13 +66,18 @@ public class MainActivity extends ActionBarActivity {
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
-                Toast.makeText(MainActivity.this, "" + position,
-                        Toast.LENGTH_SHORT).show();
+                // access arraylist here and pass selected item info to detailactivity
+                Intent intent = new Intent(getApplicationContext(), DetailActivity.class)
+                        .putExtra("title", finalMovieData.get(position).title)
+                        .putExtra("posterpath", finalMovieData.get(position).posterPath)
+                        .putExtra("plot", finalMovieData.get(position).plot)
+                        .putExtra("userrating", finalMovieData.get(position).userRating)
+                        .putExtra("releasedate", finalMovieData.get(position).releaseDate);
+
+                startActivity(intent);
             }
         });
     }
-
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -100,62 +105,63 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
     @Override
     protected void onStart() {
         super.onStart();
-/*
-        SharedPreferences sharedPrefs =
-                PreferenceManager.getDefaultSharedPreferences(this);
-        String location = sharedPrefs.getString(
-                getString(R.string.pref_location_key),
-                getString(R.string.pref_location_default));
-*/
 
-
+        // todo: should this be in onstart?
         FetchMoviesTask fetchMoviesTask = new FetchMoviesTask();
         fetchMoviesTask.execute();
-
-
-        //Log.v("MAINACTIVITY", "ONSTART");
     }
 
-    public class FetchMoviesTask extends AsyncTask<String, Void, String[]> {
+    public void resultsFromFetch(ArrayList<Movie> movieData) {
+        // getting movieData from onpostexecute
+        finalMovieData = movieData;
+    }
+
+    public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<Movie>> {
 
         private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
 
-        private String[] getMovieDataFromJson(String forecastJsonStr)
+        private ArrayList<Movie> getMovieDataFromJson(String forecastJsonStr)
                 throws JSONException {
 
             // These are the names of the JSON objects that need to be extracted.
+            final String TMDB_TITLE = "title";
             final String TMDB_POSTER_PATH = "poster_path";
+            final String TMDB_PLOT = "overview";
+            final String TMDB_USER_RATING = "vote_average";
+            final String TMDB_RELEASE_DATE = "release_date";
 
             JSONObject forecastJson = new JSONObject(forecastJsonStr);
 
             JSONArray jArray = forecastJson.getJSONArray("results");
 
-            // set the array to 20?
-            String[] tmdbPosterPaths = new String[20];
+            ArrayList<Movie> movieData = new ArrayList<Movie>();
 
             for (int i=0; i < jArray.length(); i++)
             {
                 try {
                     JSONObject oneObject = jArray.getJSONObject(i);
                     // Pulling items from the array
+                    String title = oneObject.getString(TMDB_TITLE);
                     String posterPath = oneObject.getString(TMDB_POSTER_PATH);
+                    String plot = oneObject.getString(TMDB_PLOT);
+                    String userRating = oneObject.getString(TMDB_USER_RATING);
+                    String releaseDate = oneObject.getString(TMDB_RELEASE_DATE);
 
                     //Log.v("getMovieDataFromJson", oneObjectsItem);
-                    tmdbPosterPaths[i] = posterPath;
+                    movieData.add(new Movie(title, posterPath, plot, userRating, releaseDate));
 
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
-            return tmdbPosterPaths;
+            return movieData;
         }
 
         @Override
-        protected String[] doInBackground(String... params) {
+        protected ArrayList<Movie> doInBackground(String... params) {
 
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
@@ -163,18 +169,13 @@ public class MainActivity extends ActionBarActivity {
             // Will contain the raw JSON response as a string.
             String moviesJsonStr = null;
 
-
             SharedPreferences sharedPrefs =
                     PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             String sortOrder = sharedPrefs.getString(
                     getString(R.string.pref_sort_order_key),
                     getString(R.string.pref_sort_order_default));
 
-            Log.v(LOG_TAG, "SORT BY " + sortOrder);
-
-
             try {
-
 
                 final String MOVIE_BASE_URL =
                         "http://api.themoviedb.org/3/discover/movie?";
@@ -182,6 +183,7 @@ public class MainActivity extends ActionBarActivity {
                 final String API_KEY_PARAM = "api_key";
                 final String VOTE_COUNT = "vote_count.gte";
 
+                // todo: REMOVE api key before submitting project!!!
                 Uri builtUri = Uri.parse(MOVIE_BASE_URL)
                         .buildUpon()
                         .appendQueryParameter(SORT_BY_PARAM, sortOrder)
@@ -190,21 +192,6 @@ public class MainActivity extends ActionBarActivity {
                         .build();
 
                 URL url = new URL(builtUri.toString());
-
-                Log.v(LOG_TAG, "Built URI " + builtUri.toString());
-
-
-
-
-
-
-
-                // TODO: REMOVE api key before submitting project!!!
-                //URL url = new URL("http://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=aa336466223f0deecbe36bf1aafd76d3");
-
-                //Log.v(LOG_TAG, "URL " + url.toString());
-
-                // Create the request to OpenWeatherMap, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
                 urlConnection.connect();
@@ -235,8 +222,7 @@ public class MainActivity extends ActionBarActivity {
 
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);
-                // If the code didn't successfully get the weather data, there's no point in attemping
-                // to parse it.
+
                 return null;
             } finally{
 
@@ -262,14 +248,17 @@ public class MainActivity extends ActionBarActivity {
         }
 
         @Override
-        protected void onPostExecute(String[] strings) {
+        protected void onPostExecute(ArrayList<Movie> movieData) {
+
+            resultsFromFetch(movieData);
 
             // get the array of strings containing the poster paths and set to posterURLs
-            if (strings != null) {
+            if (movieData != null) {
                 int i = 0;
 
-                for(String item: strings) {
-                    posterURLs[i] = item;
+                for(Movie item: movieData) {
+
+                    posterURLs[i] = item.posterPath;
                     //Log.v("MAINACTIVITY - item = ", item);
                     i++;
                 }
@@ -308,8 +297,6 @@ public class MainActivity extends ActionBarActivity {
             }
 
             imageAdapter.notifyDataSetChanged();
-
         }
     }
-
 }
