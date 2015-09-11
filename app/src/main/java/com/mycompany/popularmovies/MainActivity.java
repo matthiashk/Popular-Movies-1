@@ -25,45 +25,27 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity{
 
     public ArrayList<Movie> finalMovieData = new ArrayList<Movie>();
 
-    // todo: remove dummy data
-    public static List<String> defaultImages = new ArrayList<>(Arrays.asList(
-            "http://i.imgur.com/rFLNqWI.jpg",
-            "http://i.imgur.com/C9pBVt7.jpg",
-            "http://i.imgur.com/rT5vXE1.jpg",
-            "http://i.imgur.com/aIy5R2k.jpg",
-            "http://i.imgur.com/MoJs9pT.jpg",
-            "http://i.imgur.com/S963yEM.jpg",
-            "http://i.imgur.com/rLR2cyc.jpg",
-            "http://i.imgur.com/SEPdUIx.jpg",
-            "http://i.imgur.com/aC9OjaM.jpg",
-            "http://i.imgur.com/76Jfv9b.jpg",
-            "http://i.imgur.com/fUX7EIB.jpg",
-            "http://i.imgur.com/syELajx.jpg",
-            "http://i.imgur.com/COzBnru.jpg",
-            "http://i.imgur.com/Z3QjilA.jpg"
-    ));
+    private ImageAdapter mImageAdapter;
 
-    private ImageAdapter imageAdapter;
+    private GridView mGridview;
 
-    public static String[] posterURLs = new String[20];
+    private String mSortOrder;
+
+    public static ArrayList<String> posterUrls = new ArrayList<String>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        GridView gridview = (GridView) findViewById(R.id.gridview);
-        imageAdapter = new ImageAdapter(this, defaultImages);
-        gridview.setAdapter(imageAdapter);
-
-        gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mGridview = (GridView) findViewById(R.id.gridview);
+        mGridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
                 // access arraylist here and pass selected item info to detailactivity
@@ -77,6 +59,20 @@ public class MainActivity extends ActionBarActivity {
                 startActivity(intent);
             }
         });
+
+
+        // get the sort order from preferences and store in mSortOrder
+        // so we can detect if the user changed it later
+        SharedPreferences sharedPrefs =
+                PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String sortOrder = sharedPrefs.getString(
+                getString(R.string.pref_sort_order_key),
+                getString(R.string.pref_sort_order_default));
+
+        mSortOrder = sortOrder;
+
+        FetchMoviesTask fetchMoviesTask = new FetchMoviesTask();
+        fetchMoviesTask.execute();
     }
 
     @Override
@@ -109,15 +105,32 @@ public class MainActivity extends ActionBarActivity {
     protected void onStart() {
         super.onStart();
 
-        // todo: should this be in onstart?
-        FetchMoviesTask fetchMoviesTask = new FetchMoviesTask();
-        fetchMoviesTask.execute();
+        // get preferences so we can check if the user changed them
+        SharedPreferences sharedPrefs =
+                PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String sortOrder = sharedPrefs.getString(
+                getString(R.string.pref_sort_order_key),
+                getString(R.string.pref_sort_order_default));
+
+        if (mSortOrder.equals(sortOrder)) {
+            // don't fetch movies if there was no change to preferences
+        } else {
+            // set new value
+            mSortOrder = sortOrder;
+            // fetch movies to with the new sort order
+            FetchMoviesTask fetchMoviesTask = new FetchMoviesTask();
+            fetchMoviesTask.execute();
+        }
     }
 
     public void resultsFromFetch(ArrayList<Movie> movieData) {
         // getting movieData from onpostexecute
         finalMovieData = movieData;
     }
+
+    /**
+     * Gets movie data from JSON and store into an arraylist.
+     */
 
     public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<Movie>> {
 
@@ -126,7 +139,6 @@ public class MainActivity extends ActionBarActivity {
         private ArrayList<Movie> getMovieDataFromJson(String forecastJsonStr)
                 throws JSONException {
 
-            // These are the names of the JSON objects that need to be extracted.
             final String TMDB_TITLE = "title";
             final String TMDB_POSTER_PATH = "poster_path";
             final String TMDB_PLOT = "overview";
@@ -139,8 +151,7 @@ public class MainActivity extends ActionBarActivity {
 
             ArrayList<Movie> movieData = new ArrayList<Movie>();
 
-            for (int i=0; i < jArray.length(); i++)
-            {
+            for (int i=0; i < jArray.length(); i++) {
                 try {
                     JSONObject oneObject = jArray.getJSONObject(i);
                     // Pulling items from the array
@@ -169,6 +180,7 @@ public class MainActivity extends ActionBarActivity {
             // Will contain the raw JSON response as a string.
             String moviesJsonStr = null;
 
+            // get sort order from preferences
             SharedPreferences sharedPrefs =
                     PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             String sortOrder = sharedPrefs.getString(
@@ -176,7 +188,6 @@ public class MainActivity extends ActionBarActivity {
                     getString(R.string.pref_sort_order_default));
 
             try {
-
                 final String MOVIE_BASE_URL =
                         "http://api.themoviedb.org/3/discover/movie?";
                 final String SORT_BY_PARAM = "sort_by";
@@ -252,20 +263,17 @@ public class MainActivity extends ActionBarActivity {
 
             resultsFromFetch(movieData);
 
-            // get the array of strings containing the poster paths and set to posterURLs
+            posterUrls.clear();
+
+            // get the array of strings containing the poster paths and set to posterUrls
             if (movieData != null) {
-                int i = 0;
-
                 for(Movie item: movieData) {
-
-                    posterURLs[i] = item.posterPath;
-                    //Log.v("MAINACTIVITY - item = ", item);
-                    i++;
+                    posterUrls.add(item.posterPath);
                 }
             }
 
             // create new array containing complete poster urls
-            String[] posterURLsFinal = new String[20];
+            ArrayList<String> posterUrlsFinal = new ArrayList<String>();
 
             String baseURL = "http://image.tmdb.org/t/p/";
 
@@ -275,28 +283,25 @@ public class MainActivity extends ActionBarActivity {
 
             String finalURL = null;
 
-            //Log.d("this is my array", "posterURLs: " + Arrays.toString(posterURLs));
+            //Log.d("this is my array", "posterUrls: " + Arrays.toString(posterUrls));
 
-            for (int i=0; i < posterURLs.length; i++) {
-
-                posterPath = posterURLs[i];
-
+            for (int i=0; i < posterUrls.size(); i++) {
+                posterPath = posterUrls.get(i);
                 finalURL = baseURL + thumbSize + posterPath;
-
-                posterURLsFinal[i] = finalURL;
+                posterUrlsFinal.add(finalURL);
             }
 
-            List<String> uriPaths = imageAdapter.getUriList();
-
+            List<String> uriPaths = new ArrayList<String>();
             // clear the default image list before adding
             uriPaths.clear();
 
-            for (int i=0; i < posterURLsFinal.length; i++) {
-
-                uriPaths.add(posterURLsFinal[i]);
+            for (int i=0; i < posterUrlsFinal.size(); i++) {
+                uriPaths.add(posterUrlsFinal.get(i));
             }
 
-            imageAdapter.notifyDataSetChanged();
+            mImageAdapter = new ImageAdapter(getApplicationContext(), uriPaths);
+            mGridview.setAdapter(mImageAdapter);
+            mImageAdapter.notifyDataSetChanged();
         }
     }
 }

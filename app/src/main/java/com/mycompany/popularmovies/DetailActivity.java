@@ -10,6 +10,10 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+/**
+ * Provides a detail view of the selected movie item.
+ */
+
 public class DetailActivity extends ActionBarActivity {
 
     @Override
@@ -18,7 +22,6 @@ public class DetailActivity extends ActionBarActivity {
         setContentView(R.layout.activity_detail);
 
         // setup variables to get movie data from mainactivity
-
         String movieTitle = null;
         String posterPath = null;
         String plot = null;
@@ -26,8 +29,7 @@ public class DetailActivity extends ActionBarActivity {
         String releaseDate = null;
 
         Bundle extras = getIntent().getExtras();
-        if (extras != null)
-        {
+        if (extras != null) {
             movieTitle = extras.getString("title");
             posterPath = extras.getString("posterpath");
             plot = extras.getString("plot");
@@ -41,6 +43,7 @@ public class DetailActivity extends ActionBarActivity {
         ((TextView) findViewById(R.id.details_plot))
                 .setText(plot);
 
+        // allow user to scroll the view containing the plot synopsis
         ((TextView) findViewById(R.id.details_plot))
                 .setMovementMethod(new ScrollingMovementMethod());
 
@@ -51,10 +54,10 @@ public class DetailActivity extends ActionBarActivity {
                 .setText(formattedUserRating);
 
         // extract the year from the release date string
-        String movieYear = releaseDate.substring(0, 4);
+        //String movieYear = releaseDate.substring(0, 4);
 
         ((TextView) findViewById(R.id.details_release_date))
-                .setText(movieYear);
+                .setText(releaseDate);
 
         // construct url for the full posterpath
         String baseURL = "http://image.tmdb.org/t/p/";

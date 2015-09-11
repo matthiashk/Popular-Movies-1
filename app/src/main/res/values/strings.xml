@@ -13,5 +13,6 @@
     <string name="pref_sort_order_values_popular">popularity.desc</string>
     <string name="pref_sort_order_values_rating">vote_count.desc</string>
     <string name="title_activity_detail">DetailActivity</string>
+    <string name="title_activity_test">test</string>
 
 </resources>
