@@ -39,6 +39,9 @@ public class MainActivity extends ActionBarActivity{
 
     public static ArrayList<String> posterUrls = new ArrayList<String>();
 
+    /* Change the api key here  */
+    private String API_KEY = ;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -183,12 +186,11 @@ public class MainActivity extends ActionBarActivity{
                 final String API_KEY_PARAM = "api_key";
                 final String VOTE_COUNT = "vote_count.gte";
 
-                // todo: REMOVE api key before submitting project!!!
                 Uri builtUri = Uri.parse(MOVIE_BASE_URL)
                         .buildUpon()
                         .appendQueryParameter(SORT_BY_PARAM, sortOrder)
                         .appendQueryParameter(VOTE_COUNT, "10")
-                        .appendQueryParameter(API_KEY_PARAM, "aa336466223f0deecbe36bf1aafd76d3")
+                        .appendQueryParameter(API_KEY_PARAM, API_KEY)
                         .build();
 
                 URL url = new URL(builtUri.toString());
