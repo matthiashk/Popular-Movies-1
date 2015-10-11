@@ -65,11 +65,9 @@ public class MainActivity extends ActionBarActivity{
         // so we can detect if the user changed it later
         SharedPreferences sharedPrefs =
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        String sortOrder = sharedPrefs.getString(
+        mSortOrder = sharedPrefs.getString(
                 getString(R.string.pref_sort_order_key),
                 getString(R.string.pref_sort_order_default));
-
-        mSortOrder = sortOrder;
 
         FetchMoviesTask fetchMoviesTask = new FetchMoviesTask();
         fetchMoviesTask.execute();
@@ -149,7 +147,7 @@ public class MainActivity extends ActionBarActivity{
 
             JSONArray jArray = forecastJson.getJSONArray("results");
 
-            ArrayList<Movie> movieData = new ArrayList<Movie>();
+            ArrayList<Movie> movieData = new ArrayList<>();
 
             for (int i=0; i < jArray.length(); i++) {
                 try {
@@ -273,15 +271,15 @@ public class MainActivity extends ActionBarActivity{
             }
 
             // create new array containing complete poster urls
-            ArrayList<String> posterUrlsFinal = new ArrayList<String>();
+            ArrayList<String> posterUrlsFinal = new ArrayList<>();
 
             String baseURL = "http://image.tmdb.org/t/p/";
 
             String thumbSize = "w185";
 
-            String posterPath = null;
+            String posterPath;
 
-            String finalURL = null;
+            String finalURL;
 
             //Log.d("this is my array", "posterUrls: " + Arrays.toString(posterUrls));
 
@@ -291,7 +289,7 @@ public class MainActivity extends ActionBarActivity{
                 posterUrlsFinal.add(finalURL);
             }
 
-            List<String> uriPaths = new ArrayList<String>();
+            List<String> uriPaths = new ArrayList<>();
             // clear the default image list before adding
             uriPaths.clear();
 

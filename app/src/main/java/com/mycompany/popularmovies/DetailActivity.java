@@ -62,7 +62,7 @@ public class DetailActivity extends ActionBarActivity {
         // construct url for the full posterpath
         String baseURL = "http://image.tmdb.org/t/p/";
         String thumbSize = "w185";
-        String posterURL = null;
+        String posterURL;
         posterURL = baseURL + thumbSize + posterPath;
 
         ImageView imageView = ((ImageView) findViewById(R.id.details_imageview));
@@ -96,5 +96,4 @@ public class DetailActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
 }

@@ -42,7 +42,7 @@ public class ImageAdapter extends BaseAdapter {
     // create a new ImageView for each item referenced by the Adapter
     public View getView(int position, View convertView, ViewGroup parent) {
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams
-                .FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT);
+                .MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
 
         ImageView imageView;
         if (convertView == null) {
