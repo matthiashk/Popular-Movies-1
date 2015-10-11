@@ -5,7 +5,6 @@
 
     <string name="pref_title_sort_order">Change the default sort order of movies</string>
 
-
     <string-array name="pref_sort_order_list_titles">
         <item>@string/pref_sort_order_label_popular</item>
         <item>@string/pref_sort_order_label_rating</item>

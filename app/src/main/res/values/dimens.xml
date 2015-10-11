@@ -2,4 +2,10 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+
+    <!-- Settings for the DetailActivity -->
+    <dimen name="detail_label_text_size">18sp</dimen>
+    <dimen name="detail_label_padding_top">5dp</dimen>
+    <dimen name="detail_label_padding_left">5dp</dimen>
+
 </resources>

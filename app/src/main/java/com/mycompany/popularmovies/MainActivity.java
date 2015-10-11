@@ -75,24 +75,17 @@ public class MainActivity extends ActionBarActivity{
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-
             Intent settings = new Intent(getApplicationContext(), SettingsActivity.class);
             startActivity(settings);
-
             return true;
         }
 
@@ -110,9 +103,8 @@ public class MainActivity extends ActionBarActivity{
                 getString(R.string.pref_sort_order_key),
                 getString(R.string.pref_sort_order_default));
 
-        if (mSortOrder.equals(sortOrder)) {
-            // don't fetch movies if there was no change to preferences
-        } else {
+        if (!mSortOrder.equals(sortOrder)) {
+
             // set new value
             mSortOrder = sortOrder;
             // fetch movies to with the new sort order
@@ -129,7 +121,6 @@ public class MainActivity extends ActionBarActivity{
     /**
      * Gets movie data from JSON and store into an arraylist.
      */
-
     public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<Movie>> {
 
         private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
@@ -259,6 +250,7 @@ public class MainActivity extends ActionBarActivity{
         @Override
         protected void onPostExecute(ArrayList<Movie> movieData) {
 
+            // this method sends the movieData to the main activity
             resultsFromFetch(movieData);
 
             posterUrls.clear();
@@ -290,8 +282,7 @@ public class MainActivity extends ActionBarActivity{
             }
 
             List<String> uriPaths = new ArrayList<>();
-            // clear the default image list before adding
-            uriPaths.clear();
+            uriPaths.clear(); // clear the default image list before adding
 
             for (int i=0; i < posterUrlsFinal.size(); i++) {
                 uriPaths.add(posterUrlsFinal.get(i));
